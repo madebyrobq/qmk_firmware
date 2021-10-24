@@ -1,0 +1,9 @@
+#pragma once
+
+#define MIDI_BASIC
+
+#define ENCODER_RESOLUTION 4
+
+#define AUDIO_CLICKY
+
+#define DAC_SAMPLE_MAX 30000U//65535U
