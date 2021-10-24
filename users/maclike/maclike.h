@@ -43,7 +43,6 @@ enum maclike_layers {
 
 typedef enum{
   MACLIKE_KEYCODES = (SAFE_RANGE),
-  FNENT,      // Enter in the Fn layer, used for sending rename on windows and mac
   TOWIN,      // Turn on windows mode
   TOMAC,      // Turn off windows mode
 }custom_keycodes;
