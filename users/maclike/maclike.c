@@ -13,6 +13,18 @@ float mac_song[][2] = SONG(MAC_SOUND);
 float win_song[][2] = SONG(WIN_SOUND);
 #endif
 
+const key_override_t comma_exclamation_override = ko_make_basic(MOD_MASK_SHIFT, KC_COMMA, KC_EXCLAIM);
+const key_override_t period_question_override = ko_make_basic(MOD_MASK_SHIFT, KC_DOT, KC_QUESTION);
+const key_override_t slash_backslash_override = ko_make_basic(MOD_MASK_SHIFT, KC_PSLS, KC_BSLS);
+
+const key_override_t **key_overrides = (const key_override_t *[]){
+    &comma_exclamation_override,
+    &period_question_override,
+    &slash_backslash_override,
+    
+    NULL // null terminator
+};
+
 // In most apps on Windows, tapping Alt focuses the menu bar
 // Using the WinAlt and WinLeft/WinRight buttons logically sends an Alt tap
 // Which causes every other "move cursor by word" to focus the menu bar instead

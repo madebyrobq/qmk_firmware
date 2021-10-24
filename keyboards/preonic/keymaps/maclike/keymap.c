@@ -22,11 +22,11 @@ const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] = {
  * `-----------------------------------------------------------------------------------'
  *                   2u =      |Space        |Space/Raise  |
  */
-[DefaultLayer] = LAYOUT_preonic_grid(
+[DEFAULT_LAYER] = LAYOUT_preonic_grid(
     KC_GRV,  KC_1,    KC_2,    KC_3,    KC_4,    KC_5,    KC_6,    KC_7,    KC_8,    KC_9,    KC_0,    KC_DEL,
     KC_TAB,  KC_Q,    KC_W,    KC_E,    KC_R,    KC_T,    KC_Y,    KC_U,    KC_I,    KC_O,    KC_P,    KC_BSPC,
     ESC_FN,  KC_A,    KC_S,    KC_D,    KC_F,    KC_G,    KC_H,    KC_J,    KC_K,    KC_L,    COLQUOT, KC_ENT,
-    KC_LSFT, KC_Z,    KC_X,    KC_C,    KC_V,    KC_B,    KC_N,    KC_M,    KC_COM,  KC_DOT,  KC_UP,   KC_RSFT,
+    KC_LSFT, KC_Z,    KC_X,    KC_C,    KC_V,    KC_B,    KC_N,    KC_M,    KC_COMM, KC_DOT,  KC_UP,   KC_RSFT,
     KC_LCTL, KC_LALT, KC_LCMD, RAISE,   KC_SPC,  KC_SPC,  SPC_RSE, SPC_RSE, KC_RCMD, KC_LEFT, KC_DOWN, KC_RGHT
 ),
 
@@ -44,7 +44,7 @@ const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] = {
  * `-----------------------------------------------------------------------------------'
  *                   2u =      |  Space/QMK  |  Space/QMK  |
  */
-[RaiseLayer] = LAYOUT_preonic_grid(
+[RAISE_LAYER] = LAYOUT_preonic_grid(
     _______, KC_1,    KC_2,    KC_3,    KC_4,    KC_5,    KC_6,    KC_7,    KC_8,    KC_9,    KC_0,    _______,
     KC_MINS, KC_1,    KC_2,    KC_3,    KC_4,    KC_LPRN, KC_RPRN, KC_UNDS, KC_MINS, KC_PPLS, KC_EQL,  _______,
     _______, KC_4,    KC_5,    KC_6,    KC_0,    KC_LCBR, KC_RCBR, KC_PIPE, KC_PSLS, KC_PAST, KC_EQL,  _______,
@@ -66,7 +66,7 @@ const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] = {
  * `-----------------------------------------------------------------------------------'
  *                   2u =      |  M1         |  M2         |
  */
-[FnLayer] = LAYOUT_preonic_grid(
+[FN_LAYER] = LAYOUT_preonic_grid(
     XXXXXXX, KC_F1,   KC_F2,   KC_F3,   KC_F4,   KC_F5,   KC_F6,   KC_F7,   KC_F8,   KC_F9,   KC_F10,  XXXXXXX,
     KC_GRV,  KC_F1,   KC_F2,   KC_F3,   XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX, KC_BRMD, KC_BRMU, KC_WH_U, KC_DEL,
     _______, KC_F4,   KC_F5,   KC_F6,   XXXXXXX, XXXXXXX, XXXXXXX, KC_MRWD, KC_MPLY, KC_MFFD, KC_WH_D, FNENT,
@@ -75,7 +75,7 @@ const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] = {
 ),
 
 // Keyboard functions
-[QMKLayer] = LAYOUT_preonic_grid(
+[QMK_LAYER] = LAYOUT_preonic_grid(
     XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX,
     XXXXXXX, XXXXXXX,   TOWIN, XXXXXXX,   RESET, XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX,
     XXXXXXX,   TOMAC, XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX,
