@@ -13,9 +13,27 @@ float mac_song[][2] = SONG(MAC_SOUND);
 float win_song[][2] = SONG(WIN_SOUND);
 #endif
 
-const key_override_t comma_exclamation_override = ko_make_basic(MOD_MASK_SHIFT, KC_COMMA, KC_EXCLAIM);
-const key_override_t period_question_override = ko_make_basic(MOD_MASK_SHIFT, KC_DOT, KC_QUESTION);
-const key_override_t slash_backslash_override = ko_make_basic(MOD_MASK_SHIFT, KC_PSLS, KC_BSLS);
+const key_override_t comma_exclamation_override = ko_make_with_layers_negmods_and_options(
+  MOD_MASK_SHIFT, 
+  KC_COMMA, 
+  KC_EXCLAIM,
+  ~0,
+  MOD_MASK_CAG,
+  ko_option_activation_trigger_down);
+const key_override_t period_question_override = ko_make_with_layers_negmods_and_options(
+  MOD_MASK_SHIFT, 
+  KC_DOT, 
+  KC_QUESTION,
+  ~0,
+  MOD_MASK_CAG,
+  ko_option_activation_trigger_down);
+const key_override_t slash_backslash_override = ko_make_with_layers_negmods_and_options(
+  MOD_MASK_SHIFT, 
+  KC_PSLS, 
+  KC_BSLS,
+  ~0,
+  MOD_MASK_CAG,
+  ko_option_activation_trigger_down);
 
 const key_override_t **key_overrides = (const key_override_t *[]){
     &comma_exclamation_override,
