@@ -152,7 +152,7 @@ bool process_special_case_key(uint16_t keycode, bool pressed){
 
   if(keycode == KC_ENT){
     if(pressed){
-      if(winmodeactive && IS_LAYER_ON(FN_LAYER))
+      if(winmodeactive && (IS_LAYER_ON(FN_LAYER) || IS_LAYER_ON(RAISE_LAYER)))
         // Send rename if Windows sends Fn Enter
         SEND_STRING(SS_TAP(X_F2));
       else
