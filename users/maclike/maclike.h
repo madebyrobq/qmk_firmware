@@ -25,6 +25,7 @@
 
 enum maclike_layers {
   DEFAULT_LAYER,
+  WIN_LAYER,
   RAISE_LAYER,
   FN_LAYER,
   NAV_LAYER,
