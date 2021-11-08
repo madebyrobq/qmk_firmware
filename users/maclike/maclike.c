@@ -3,16 +3,6 @@
 #include "quantum.h"
 #include "maclike.h"
 
-#ifdef AUDIO_ENABLE
-// Mac chord 
-#define MAC_SOUND E__NOTE(_FS4), E__NOTE(_AS4), Q__NOTE(_CS5), W__NOTE(_FS5),
-float mac_song[][2] = SONG(MAC_SOUND);
-
-// XP Startup
-#define WIN_SOUND W__NOTE(_DS5), S__NOTE(_DS4), H__NOTE(_AS4), H__NOTE(_GS4), H__NOTE(_DS4), H__NOTE(_DS5), H__NOTE(_AS4)
-float win_song[][2] = SONG(WIN_SOUND);
-#endif
-
 const key_override_t comma_exclamation_override = ko_make_with_layers_negmods_and_options(
   MOD_MASK_SHIFT, 
   KC_COMMA, 
@@ -50,74 +40,12 @@ const key_override_t **key_overrides = (const key_override_t *[]){
 // This prevents the Alt tap behavior when using arrow keys as well as all over Windows which is nice
 #define BLANK X_F17
 
-bool winmodeactive = false;
 bool wintaskswitcheropen = false;
 bool wincmdpressed = false;
 bool winaltpressed = false;
 
-typedef union {
-  uint32_t raw;
-  struct {
-    bool windows_mode_pref :1; // One bit
-  };
-} user_config_t;
-user_config_t user_config;
-
-void keyboard_post_init_user(void) {
-
-  // Read the user config from EEPROM
-  user_config.raw = eeconfig_read_user();
-
-  // Set initial value
-  winmodeactive = user_config.windows_mode_pref;
-
-  // Play startup sound based on winmode
-  if(winmodeactive){
-      #ifdef MAC_SOUND
-      stop_all_notes();
-      PLAY_SONG(win_song);
-      #endif
-  }
-  else{
-      #ifdef MAC_SOUND
-      stop_all_notes();
-      PLAY_SONG(mac_song);
-      #endif
-  }
-}
-
-void set_windows_mode_pref(bool enabled){
-  user_config.windows_mode_pref = enabled;
-  eeconfig_update_user(user_config.raw);
-}
-
-bool process_toggle_winmode(uint16_t keycode, bool pressed){
-
-  if(keycode == TOWIN){
-    if(pressed){
-      #ifdef MAC_SOUND
-      stop_all_notes();
-      PLAY_SONG(win_song);
-      #endif
-      winmodeactive = true;
-      set_windows_mode_pref(winmodeactive);
-    }
-    return false;
-  }
-
-  if(keycode == TOMAC){
-    if(pressed){
-      #ifdef MAC_SOUND
-      stop_all_notes();
-      PLAY_SONG(mac_song);
-      #endif
-      winmodeactive = false;
-      set_windows_mode_pref(winmodeactive);
-    }
-    return false;
-  }
-
-  return true;
+bool win_mode(void){
+  return layer_state_is(WIN_LAYER);
 }
 
 bool process_special_case_key(uint16_t keycode, bool pressed){
@@ -125,7 +53,7 @@ bool process_special_case_key(uint16_t keycode, bool pressed){
   // Scrolling for mac needs to be reversed
   if(keycode == KC_WH_D){
     if(pressed){
-      if(winmodeactive)
+      if(win_mode())
         register_code(KC_WH_D);
       else
         register_code(KC_WH_U);
@@ -138,7 +66,7 @@ bool process_special_case_key(uint16_t keycode, bool pressed){
   }
   if(keycode == KC_WH_U){
     if(pressed){
-      if(winmodeactive)
+      if(win_mode())
         register_code(KC_WH_U);
       else
         register_code(KC_WH_D);
@@ -152,7 +80,7 @@ bool process_special_case_key(uint16_t keycode, bool pressed){
 
   if(keycode == KC_ENT){
     if(pressed){
-      if(winmodeactive && (IS_LAYER_ON(FN_LAYER) || IS_LAYER_ON(RAISE_LAYER)))
+      if(win_mode() && (IS_LAYER_ON(FN_LAYER) || IS_LAYER_ON(RAISE_LAYER)))
         // Send rename if Windows sends Fn Enter
         SEND_STRING(SS_TAP(X_F2));
       else
@@ -308,14 +236,23 @@ bool process_record_user_maclike(uint16_t keycode, keyrecord_t *record) {
 
   bool pressed = record -> event.pressed;
 
-  if(winmodeactive && !process_winmode_key(keycode, pressed))
+  if(win_mode() && !process_winmode_key(keycode, pressed))
     return false;
 
   if(!process_special_case_key(keycode, pressed))
     return false;
   
-  if(!process_toggle_winmode(keycode, pressed))
+  if(keycode == TOWIN){
+    if(pressed)
+      set_single_persistent_default_layer(WIN_LAYER);
     return false;
+  }
+
+  if(keycode == TOMAC){
+    if(pressed)
+      set_single_persistent_default_layer(DEFAULT_LAYER);
+    return false;
+  }
 
   return true;
 };
