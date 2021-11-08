@@ -48,6 +48,8 @@ enum maclike_layers {
 
 #define COL_NAV LT(NAV_LAYER, KC_SCLN)
 
+#define WIN_CMD KC_RCTL
+
 typedef enum{
   MACLIKE_KEYCODES = (SAFE_RANGE),
   TOWIN,      // Turn on windows mode
