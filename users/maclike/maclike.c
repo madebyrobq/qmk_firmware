@@ -10,10 +10,15 @@
 // This prevents the Alt tap behavior when using arrow keys as well as all over Windows which is nice
 #define BLANK X_F17
 
+void unfocus_menu_bar(void){
+  SEND_STRING(SS_TAP(BLANK));
+}
+
 bool wintaskswitcheropen = false;
 
 bool win_mode(void){
-  return IS_LAYER_ON(WIN_LAYER);
+  // NOTE: Default layer state actually starts at 1 so it doesn't correspond to the set layer...
+  return default_layer_state - 1 == WIN_LAYER;
 }
 
 bool process_maclike_key(uint16_t keycode, bool pressed){
@@ -39,30 +44,51 @@ bool process_maclike_key(uint16_t keycode, bool pressed){
 
 bool process_maclike_win_mode_key(uint16_t keycode, bool pressed){
 
+  if(!win_mode())
+    return true;
+
+  bool alt_pressed = get_mods() & MOD_BIT(KC_LALT);
+  bool cmd_pressed = get_mods() & MOD_BIT(WIN_CMD);
+
+// Suppress Ctrl and hold Alt to open the task switcher, and continue
+  if(keycode == KC_TAB && pressed && cmd_pressed){
+    unregister_code(WIN_CMD);
+    register_code(KC_LALT);
+    wintaskswitcheropen = true;
+  }
+
+  // Check to release the task switcher, and continue
+  if(keycode == WIN_CMD && !pressed && wintaskswitcheropen){
+      unregister_code(KC_LALT);
+      wintaskswitcheropen = false;
+  }  
+
+  // Suppress annoying menu bar focus immediately after registering Alt
+  if(keycode == KC_LALT && pressed){
+    register_code(keycode);
+    unfocus_menu_bar();
+    //return false;
+  }
+
+  // Send Ctrl+Arrow instead of Alt+Arrow
+  if(keycode == KC_LEFT || keycode == KC_RIGHT){
+    if(pressed && alt_pressed && !cmd_pressed){
+        unregister_code(KC_LALT);
+        if(keycode == KC_LEFT)
+          SEND_STRING(SS_RCTL(SS_TAP(X_LEFT)));
+        else
+          SEND_STRING(SS_RCTL(SS_TAP(X_RIGHT)));
+        register_code(KC_LALT);
+        unfocus_menu_bar();
+        return false;
+    }
+  }
+  
   // Send rename if Windows sends Enter from the Raise/Fn layer
   if(keycode == KC_ENT && (IS_LAYER_ON(FN_LAYER) || IS_LAYER_ON(RAISE_LAYER))){
     if(pressed)
         SEND_STRING(SS_TAP(X_F2));
     return false;
-  }
-
-  if(keycode == WIN_CMD){
-    if (!pressed && wintaskswitcheropen){
-      // Release the task switcher
-      unregister_code(KC_LALT);
-      wintaskswitcheropen = false;
-    }
-    return true;
-  }
-
-  if(keycode == KC_LALT)
-      SEND_STRING(SS_TAP(BLANK));
-
-  if(keycode == KC_TAB && pressed && MOD_BIT(WIN_CMD)){
-    // Swap Ctrl for Alt
-    unregister_code(WIN_CMD);
-    register_code(KC_LALT);
-    wintaskswitcheropen = true;
   }
 
   return true;
@@ -72,7 +98,7 @@ bool process_record_user_maclike(uint16_t keycode, keyrecord_t *record) {
 
   bool pressed = record -> event.pressed;
 
-  if(win_mode() && !process_maclike_win_mode_key(keycode, pressed))
+  if(!process_maclike_win_mode_key(keycode, pressed))
     return false;
 
   if(!process_maclike_key(keycode, pressed))
@@ -125,7 +151,7 @@ const key_override_t slash_backslash_override = ko_make_with_layers_negmods_and_
 
 // Win mode overrides
 // "Cmd" + L/R = home/end
-bool win_mode_key_override(bool pressed, void *context) { return IS_LAYER_ON(WIN_LAYER); }
+bool win_mode_key_override(bool pressed, void *context) { return win_mode(); }
 const key_override_t cmd_right_override = {
   .trigger_mods          = MOD_BIT(WIN_CMD),
   .layers                 = ~0,
@@ -151,7 +177,7 @@ const key_override_t cmd_left_override = {
 
 // Alt + L/R = Ctrl + L/R 
 // NOTE: this doesn't work well with key overrides as it focuses the menu bar every other time...
-const key_override_t alt_right_override = {
+/*const key_override_t alt_right_override = {
   .trigger_mods          = MOD_BIT(KC_LALT),
   .layers                 = ~0,
   .suppressed_mods        = MOD_BIT(KC_LALT),
@@ -172,7 +198,7 @@ const key_override_t alt_left_override = {
   .context                = NULL,
   .trigger                = KC_LEFT,
   .replacement            = RCTL(KC_LEFT),
-  .enabled                = NULL};
+  .enabled                = NULL};*/
 
 // "Cmd" + Backspace = Delete
 const key_override_t cmd_backspace_override = {
@@ -214,26 +240,18 @@ const key_override_t cmd_ctrl_space_override = {
   .enabled                = NULL};
 
 // "Cmd" + Tab = Alt + Tab and hold Alt
-bool win_mode_cmd_tab_override(bool pressed, void *context) {
-    if(!IS_LAYER_ON(WIN_LAYER))
-      return false;
-
-    register_code(KC_LALT);
-    wintaskswitcheropen = true;
-
-    return true;
-}
-const key_override_t cmd_tab_override = {
+// NOTE: this doesn't hold the task switcher open which is annoying
+/*const key_override_t cmd_tab_override = {
   .trigger_mods           = MOD_BIT(WIN_CMD),
   .layers                 = ~0,
   .suppressed_mods        = MOD_BIT(WIN_CMD),
   .options                = ko_option_activation_trigger_down,
   .negative_mod_mask      = (uint8_t) 0,
-  .custom_action          = win_mode_cmd_tab_override,
+  .custom_action          = win_mode_key_override,
   .context                = NULL,
   .trigger                = KC_TAB,
-  .replacement            = KC_TAB,
-  .enabled                = NULL};
+  .replacement            = LALT(KC_TAB),
+  .enabled                = NULL};*/
 
 const key_override_t cmd_option_esc_override = {
   .trigger_mods           = MOD_BIT(WIN_CMD) | MOD_BIT(KC_LALT),
@@ -241,10 +259,10 @@ const key_override_t cmd_option_esc_override = {
   .suppressed_mods        = 0,
   .options                = ko_option_activation_trigger_down,
   .negative_mod_mask      = (uint8_t) 0,
-  .custom_action          = win_mode_cmd_tab_override,
+  .custom_action          = win_mode_key_override,
   .context                = NULL,
-  .trigger                = KC_ESC,
-  .replacement            = KC_TAB,
+  .trigger                = ESC_RSE,
+  .replacement            = LCA(KC_DEL),
   .enabled                = NULL};
 
 const key_override_t **key_overrides = (const key_override_t *[]){
@@ -258,7 +276,8 @@ const key_override_t **key_overrides = (const key_override_t *[]){
     &cmd_backspace_override,
     &cmd_space_override,
     &cmd_ctrl_space_override,
-    &cmd_tab_override,
+    //&cmd_tab_override,
+    &cmd_option_esc_override,
     
     NULL // null terminator
 };
