@@ -90,7 +90,9 @@ bool process_maclike_win_mode_key(uint16_t keycode, bool pressed){
   // Alt + Backspace = Ctrl + Backspace (delete one word)
   if(keycode == KC_BSPC && pressed && alt_pressed && !cmd_pressed){
     unregister_code(KC_LALT);
-    register_code(KC_BSPC);
+    register_code(KC_RCTL);
+    register_code(keycode);
+    unregister_code(KC_RCTL);
     register_code(KC_LALT);
     unfocus_menu_bar(); // unfocus menu bar after registering Alt
     return false;
