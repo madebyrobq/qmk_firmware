@@ -111,10 +111,9 @@ bool process_maclike_win_mode_key(uint16_t keycode, bool pressed){
     if(pressed && cmd_pressed && !lctrl_pressed){
       unregister_code(WIN_CMD);
       register_code(KC_LGUI);
-      register_code(WIN_CMD);
       return false;
     }
-    else if(!pressed){
+    if(!pressed){
       // Release Windows key on Space up
       // Note: not currently tracked to prevent false releases (like task switcher)
       unregister_code(KC_LGUI);
