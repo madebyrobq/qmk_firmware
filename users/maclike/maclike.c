@@ -3,16 +3,10 @@
 #include "quantum.h"
 #include "maclike.h"
 
-// In most apps on Windows, tapping Alt focuses the menu bar
-// Using the WinAlt and WinLeft/WinRight buttons logically sends an Alt tap
-// Which causes every other "move cursor by word" to focus the menu bar instead
-// Every time we register Alt, send a 'blank' keycode which is used for literally nothing
-// This prevents the Alt tap behavior when using arrow keys as well as all over Windows which is nice
+// Tap an arbitrary F-key to prevent Windows from focusing the menu bar when tapping Alt 
+// or when moving the cursor word-by-word with Alt + L/R, etc.
 #define BLANK X_F17
-
-void unfocus_menu_bar(void){
-  SEND_STRING(SS_TAP(BLANK));
-}
+void unfocus_menu_bar(void){ SEND_STRING(SS_TAP(BLANK)); }
 
 bool wintaskswitcheropen = false;
 
@@ -22,6 +16,16 @@ bool win_mode(void){
 }
 
 bool process_maclike_key(uint16_t keycode, bool pressed){
+
+  if(keycode == TOWIN && pressed){
+    set_single_persistent_default_layer(WIN_LAYER);
+    return false;
+  }
+
+  if(keycode == TOMAC && pressed){
+    set_single_persistent_default_layer(DEFAULT_LAYER);
+    return false;
+  }
 
   // Scrolling for Mac needs to be reversed
   if(keycode == KC_WH_D && !win_mode()){
@@ -47,10 +51,11 @@ bool process_maclike_win_mode_key(uint16_t keycode, bool pressed){
   if(!win_mode())
     return true;
 
+  bool lctrl_pressed = get_mods() & MOD_BIT(KC_LCTL);
   bool alt_pressed = get_mods() & MOD_BIT(KC_LALT);
   bool cmd_pressed = get_mods() & MOD_BIT(WIN_CMD);
 
-// Suppress Ctrl and hold Alt to open the task switcher, and continue
+  // Cmd + Tab = open task switcher, and continue
   if(keycode == KC_TAB && pressed && cmd_pressed){
     unregister_code(WIN_CMD);
     register_code(KC_LALT);
@@ -61,30 +66,62 @@ bool process_maclike_win_mode_key(uint16_t keycode, bool pressed){
   if(keycode == WIN_CMD && !pressed && wintaskswitcheropen){
       unregister_code(KC_LALT);
       wintaskswitcheropen = false;
-  }  
+  }
 
   // Suppress annoying menu bar focus immediately after registering Alt
   if(keycode == KC_LALT && pressed){
     register_code(keycode);
     unfocus_menu_bar();
-    //return false;
   }
 
-  // Send Ctrl+Arrow instead of Alt+Arrow
+  // Alt + L/R = Ctrl + L/R (move cursor one word)
   if(keycode == KC_LEFT || keycode == KC_RIGHT){
     if(pressed && alt_pressed && !cmd_pressed){
         unregister_code(KC_LALT);
-        if(keycode == KC_LEFT)
-          SEND_STRING(SS_RCTL(SS_TAP(X_LEFT)));
-        else
-          SEND_STRING(SS_RCTL(SS_TAP(X_RIGHT)));
+        register_code(KC_RCTL);
+        register_code(keycode);
+        unregister_code(KC_RCTL);
         register_code(KC_LALT);
-        unfocus_menu_bar();
+        unfocus_menu_bar(); // unfocus menu bar after registering Alt
         return false;
     }
   }
-  
-  // Send rename if Windows sends Enter from the Raise/Fn layer
+
+  // Alt + Backspace = Ctrl + Backspace (delete one word)
+  if(keycode == KC_BSPC && pressed && alt_pressed && !cmd_pressed){
+    unregister_code(KC_LALT);
+    register_code(KC_BSPC);
+    register_code(KC_LALT);
+    unfocus_menu_bar(); // unfocus menu bar after registering Alt
+    return false;
+  }
+
+  // Ctrl + Cmd + Space = Emojis
+  if(keycode == KC_SPC && pressed && lctrl_pressed && cmd_pressed){
+    unregister_code(WIN_CMD);
+    unregister_code(KC_LCTL);
+    SEND_STRING(SS_LGUI("."));
+    register_code(WIN_CMD);
+    register_code(KC_LCTL);
+    return false;
+  }
+
+  // Cmd + Space = Windows key, which can be tapped for search or held for Windows commands
+  if(keycode == KC_SPC){
+    if(pressed && cmd_pressed && !lctrl_pressed){
+      unregister_code(WIN_CMD);
+      register_code(KC_LGUI);
+      register_code(WIN_CMD);
+      return false;
+    }
+    else if(!pressed){
+      // Release Windows key on Space up
+      // Note: not currently tracked to prevent false releases (like task switcher)
+      unregister_code(KC_LGUI);
+    }
+  }
+
+  // Send rename (F2) if Windows sends Enter from the Raise/Fn layer
   if(keycode == KC_ENT && (IS_LAYER_ON(FN_LAYER) || IS_LAYER_ON(RAISE_LAYER))){
     if(pressed)
         SEND_STRING(SS_TAP(X_F2));
@@ -103,18 +140,6 @@ bool process_record_user_maclike(uint16_t keycode, keyrecord_t *record) {
 
   if(!process_maclike_key(keycode, pressed))
     return false;
-  
-  if(keycode == TOWIN){
-    if(pressed)
-      set_single_persistent_default_layer(WIN_LAYER);
-    return false;
-  }
-
-  if(keycode == TOMAC){
-    if(pressed)
-      set_single_persistent_default_layer(DEFAULT_LAYER);
-    return false;
-  }
 
   return true;
 };
@@ -214,7 +239,7 @@ const key_override_t cmd_backspace_override = {
   .enabled                = NULL};
 
 // "Cmd" + Space = Windows key (tap for search)
-const key_override_t cmd_space_override = {
+/*const key_override_t cmd_space_override = {
   .trigger_mods           = MOD_BIT(WIN_CMD),
   .layers                 = ~0,
   .suppressed_mods        = MOD_BIT(WIN_CMD),
@@ -224,10 +249,11 @@ const key_override_t cmd_space_override = {
   .context                = NULL,
   .trigger                = KC_SPC,
   .replacement            = KC_LGUI,
-  .enabled                = NULL};
+  .enabled                = NULL};*/
 
 // "Cmd" + LCTRL + Space = emojis
-const key_override_t cmd_ctrl_space_override = {
+// NOTE: Key overrides with Left and Right sides active for EITHER not BOTH
+/*const key_override_t cmd_ctrl_space_override = {
   .trigger_mods           = MOD_BIT(WIN_CMD) | MOD_BIT(KC_LCTL),
   .layers                 = ~0,
   .suppressed_mods        = MOD_BIT(WIN_CMD) | MOD_BIT(KC_LCTL),
@@ -237,7 +263,7 @@ const key_override_t cmd_ctrl_space_override = {
   .context                = NULL,
   .trigger                = KC_SPC,
   .replacement            = LGUI(KC_DOT),
-  .enabled                = NULL};
+  .enabled                = NULL};*/
 
 // "Cmd" + Tab = Alt + Tab and hold Alt
 // NOTE: this doesn't hold the task switcher open which is annoying
@@ -274,8 +300,8 @@ const key_override_t **key_overrides = (const key_override_t *[]){
     //&alt_right_override,
     //&alt_left_override,
     &cmd_backspace_override,
-    &cmd_space_override,
-    &cmd_ctrl_space_override,
+    //&cmd_space_override,
+    //&cmd_ctrl_space_override,
     //&cmd_tab_override,
     &cmd_option_esc_override,
     
