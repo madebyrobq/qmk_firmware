@@ -16,7 +16,7 @@
 
 
 
-// qmk make wilba_tech/rama_works_m50_a:maclike
+// make wilba_tech/rama_works_m50_a:maclike:flash
 
 #include QMK_KEYBOARD_H
 #include "quantum.h"
@@ -32,7 +32,7 @@ const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] = {
  * |-------------+------+------+------+------+------+------+------+------+------+------+------|
  * |      | Shift|   Z  |   X  |   C  |   V  |   B  |   N  |   M  |  ,!  |  .?  |  Up  |Shift |
  * |-------------+------+------+------+------+------+------+------+------+------+------+------|
- * |      | Ctrl | Alt  | CMD  |RAISE | S/R  |    Space    |  S/R | CMD  | Left | Down |Right |
+ * |      | Ctrl | Alt  | CMD  | S/R | Space |    Space    |  S/R | CMD  | Left | Down |Right |
  * `------------------------------------------------------------------------------------------'
  */
 [DEFAULT_LAYER] = LAYOUT(
@@ -50,13 +50,13 @@ const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] = {
 ),
 
 /* Numpad and Symbols
- * 
+ *
  * Left handed numpad for Unity, Blender, etc to keep right hand on the mouse
  * Number order and placement similar to number row
  * Easy access to 0, ., = in the index columns
  * Operators in the middle
  * Symmetric symbol columns prioritizing parentheses in home row
- * 
+ *
  * ,------------------------------------------------------------------------------------------.
  * |      |  `   |   1  |   2  |   3  |   4  |   -  |   +  |      |   [  |   ]  |   '  | [v]  |
  * |-------------+------+------+------+------+------+------+------+------+------+------+------|
@@ -102,7 +102,7 @@ const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] = {
 
 // Keyboard functions
 //
-// With special RGB for wilba 
+// With special RGB for wilba
 //
 [QMK_LAYER] = LAYOUT(
     _______, XXXXXXX, XXXXXXX,   TOWIN, XXXXXXX,   RESET, XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX,
