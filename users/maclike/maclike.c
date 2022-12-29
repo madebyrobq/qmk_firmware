@@ -3,12 +3,13 @@
 #include "quantum.h"
 #include "maclike.h"
 
-// Tap an arbitrary F-key to prevent Windows from focusing the menu bar when tapping Alt 
+// Tap an arbitrary F-key to prevent Windows from focusing the menu bar when tapping Alt
 // or when moving the cursor word-by-word with Alt + L/R, etc.
 #define BLANK X_F17
 void unfocus_menu_bar(void){ SEND_STRING(SS_TAP(BLANK)); }
 
 bool wintaskswitcheropen = false;
+bool raisedeleteready = false;
 
 bool win_mode(void){
   // NOTE: Default layer state actually starts at 1 so it doesn't correspond to the set layer...
@@ -27,6 +28,23 @@ bool process_maclike_key(uint16_t keycode, bool pressed){
     return false;
   }
 
+    // Let the first raise-backspace be delete
+    if(keycode == SPC_RSE){
+        raisedeleteready |= pressed;
+    }
+    else if(keycode == KC_BSPC){
+        if(raisedeleteready) {
+            if(pressed)
+                register_code(KC_DEL);
+            else
+                unregister_code(KC_DEL);
+            return false;
+        }
+    }
+    else if(pressed) {
+        raisedeleteready = false;
+    }
+
   // Scrolling for Mac needs to be reversed
   if(keycode == KC_WH_D && !win_mode()){
     if(pressed)
@@ -42,7 +60,7 @@ bool process_maclike_key(uint16_t keycode, bool pressed){
       unregister_code(KC_WH_D);
     return false;
   }
-  
+
   return true;
 }
 
@@ -154,22 +172,22 @@ __attribute__ ((weak)) bool process_record_user(uint16_t keycode, keyrecord_t *r
 
 // Basic Shift overrides for different symbols
 const key_override_t comma_exclamation_override = ko_make_with_layers_negmods_and_options(
-  MOD_MASK_SHIFT, 
-  KC_COMMA, 
+  MOD_MASK_SHIFT,
+  KC_COMMA,
   KC_EXCLAIM,
   ~0,
   MOD_MASK_CAG,
   ko_option_activation_trigger_down);
 const key_override_t period_question_override = ko_make_with_layers_negmods_and_options(
-  MOD_MASK_SHIFT, 
-  KC_DOT, 
+  MOD_MASK_SHIFT,
+  KC_DOT,
   KC_QUESTION,
   ~0,
   MOD_MASK_CAG,
   ko_option_activation_trigger_down);
 const key_override_t slash_backslash_override = ko_make_with_layers_negmods_and_options(
-  MOD_MASK_SHIFT, 
-  KC_PSLS, 
+  MOD_MASK_SHIFT,
+  KC_PSLS,
   KC_BSLS,
   ~0,
   MOD_MASK_CAG,
@@ -201,7 +219,7 @@ const key_override_t cmd_left_override = {
   .replacement            = KC_HOME,
   .enabled                = NULL};
 
-// Alt + L/R = Ctrl + L/R 
+// Alt + L/R = Ctrl + L/R
 // NOTE: this doesn't work well with key overrides as it focuses the menu bar every other time...
 /*const key_override_t alt_right_override = {
   .trigger_mods          = MOD_BIT(KC_LALT),
@@ -305,6 +323,6 @@ const key_override_t **key_overrides = (const key_override_t *[]){
     //&cmd_ctrl_space_override,
     //&cmd_tab_override,
     &cmd_option_esc_override,
-    
+
     NULL // null terminator
 };
