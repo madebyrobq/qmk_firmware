@@ -1,5 +1,5 @@
 #include QMK_KEYBOARD_H
-#include "muse.h"
+//#include "muse.h"
 #include "quantum.h"
 #include "maclike.h"
 

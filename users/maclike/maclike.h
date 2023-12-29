@@ -56,12 +56,4 @@ typedef enum{
   TOMAC,      // Turn off windows mode
 }custom_keycodes;
 
-typedef enum{
-  TD_COLQUOT = 0
-}tapdances;
-
-__attribute__ ((weak)) qk_tap_dance_action_t tap_dance_actions[] = {
-  [TD_COLQUOT] = ACTION_TAP_DANCE_DOUBLE(KC_SCLN, KC_QUOT)
-};
-
 #endif
