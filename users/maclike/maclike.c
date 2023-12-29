@@ -28,9 +28,11 @@ bool process_maclike_key(uint16_t keycode, bool pressed){
     return false;
   }
 
-    // Let the first raise-backspace be delete
+    // Let the raise-backspace be delete until another key is pressed
     if(keycode == SPC_RSE){
-        raisedeleteready |= pressed;
+        raisedeleteready = pressed;
+        if(!pressed)
+            unregister_code(KC_DEL);
     }
     else if(keycode == KC_BSPC){
         if(raisedeleteready) {
@@ -38,10 +40,11 @@ bool process_maclike_key(uint16_t keycode, bool pressed){
                 register_code(KC_DEL);
             else
                 unregister_code(KC_DEL);
-            return false;
+            return false; // Don't process regular backspace
         }
     }
     else if(pressed) {
+        // While raise is held, other presses invalidate raise-delete
         raisedeleteready = false;
     }
 
