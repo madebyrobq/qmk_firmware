@@ -19,7 +19,7 @@
     "processor": "RP2040",
     "url": "https://github.com/madebyrobq/Ortho4x10TKL",
     "usb": {
-        "device_version": "0.1.0",
+        "device_version": "0.1",
         "pid": "0x4F54",
         "vid": "0x5251"
     },
