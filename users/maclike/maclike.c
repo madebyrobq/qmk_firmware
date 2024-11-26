@@ -3,11 +3,6 @@
 #include "quantum.h"
 #include "maclike.h"
 
-// Tap an arbitrary F-key to prevent Windows from focusing the menu bar when tapping Alt
-// or when moving the cursor word-by-word with Alt + L/R, etc.
-#define BLANK X_F17
-void unfocus_menu_bar(void){ SEND_STRING(SS_TAP(BLANK)); }
-
 bool wintaskswitcheropen = false;
 bool raisedeleteready = false;
 

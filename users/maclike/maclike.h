@@ -10,10 +10,13 @@
 //  git pull upstream master
 //  git push origin master
 //
-// Define these in config.h (they have no effect here)
-// #define PERMISSIVE_HOLD // Use hold if another key it pressed and released under the tapping term
-// #define TAPPING_FORCE_HOLD // Allow double tap followed by hold, important for spacebar LT
-// #define TAPPING_TERM 200
+// Define these in config.h (they have no effect here?)
+#define PERMISSIVE_HOLD // Allow fast nested hold-taps, but not fast rolling ones
+#define QUICK_TAP_TERM 0 // Turn off key repeat on hold-tap keys when double tapped
+#define TAPPING_TERM 200 // Adjust as needed
+
+// Prevent key overrides using LALT or LGUI (default values) from triggering tap functions
+#define DUMMY_MOD_NEUTRALIZER_KEYCODE KC_F18
 
 #ifndef USERSPACE
 #define USERSPACE
