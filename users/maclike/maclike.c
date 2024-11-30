@@ -87,8 +87,7 @@ bool process_maclike_win_mode_key(uint16_t keycode, bool pressed){
   // Suppress annoying menu bar focus immediately after registering Alt
   if(keycode == KC_LALT && pressed){
     register_code(keycode);
-    unregister_code(KC_LALT);
-    register_code(KC_LALT);
+    tap_code(DUMMY_MOD_NEUTRALIZER_KEYCODE); // manually neutralize Alt focusing menu bar
   }
 
   // Cmd + Space = Windows key, which can be tapped for search or held for Windows commands
@@ -109,7 +108,7 @@ bool process_maclike_win_mode_key(uint16_t keycode, bool pressed){
   // Send rename (F2) if Windows sends Enter from the Raise/Fn layer
   if(keycode == KC_ENT && (IS_LAYER_ON(FN_LAYER) || IS_LAYER_ON(RAISE_LAYER))){
     if(pressed)
-        SEND_STRING(SS_TAP(X_F2));
+        tap_code(KC_F2);
     return false;
   }
 
@@ -186,7 +185,7 @@ const key_override_t cmd_left_override = {
   .enabled                = NULL};
 
 // Alt + L/R = Ctrl + L/R
-// NOTE: this doesn't work well with key overrides as it focuses the menu bar every other time...
+// Uses DUMMY_MOD_NEUTRALIZER_KEYCODE to prevent focusing menu bar
 const key_override_t alt_right_override = {
   .trigger_mods          = MOD_BIT(KC_LALT),
   .layers                 = ~0,
